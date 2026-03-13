@@ -25,7 +25,7 @@ class AdminMiddleware(BaseMiddleware):
         except Exception as e:
             raise e
         
-    async def _send_denied_message(event: Message | CallbackQuery) -> None:
+    async def _send_denied_message(self, event: Message | CallbackQuery) -> None:
         prompt = "Немає доступу"
         if isinstance(event, Message):
             await event.answer(prompt)
