@@ -9,6 +9,7 @@ from .base import BaseHandler
 from src.db.connector import DBConnector
 from src.db.schemas.report import ReportSchema
 from src.utils.keyboards import get_back_keyboard
+from src.utils.validators import is_positive_int
 
 
 class ReportStates(StatesGroup):
@@ -36,6 +37,9 @@ class ReportHandler(BaseHandler):
         
 
     async def get_absentees(self, message: Message, state: FSMContext) -> None:
+        if not is_positive_int(message.text):
+            await message.answer("Введіть ціле позитивне число")
+            return
         await state.update_data(absentees=message.text)
         await state.set_state(ReportStates.waiting_for_patients)
         await message.answer(
@@ -44,6 +48,12 @@ class ReportHandler(BaseHandler):
         )
 
     async def get_patients(self, message: Message, state: FSMContext, db: DBConnector) -> None:
+        if not is_positive_int(message.text):
+            await message.answer("Введіть ціле позитивне число")
+            return
+        if int(message.text) > int((await state.get_data()).get("absentees")):
+            await message.answer("Кількість хворих не може бути більшою за кількість відсутніх. Це не логічно 🧐")
+            return
         await state.update_data(patients=message.text)
         await self.submit(message, state, db)
 
