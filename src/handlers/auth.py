@@ -1,3 +1,4 @@
+from aiogram import F
 from aiogram.types import CallbackQuery, Message
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
@@ -18,6 +19,7 @@ class AuthStates(StatesGroup):
 class AuthHandler(BaseHandler):
     def register_handlers(self):
         self.router.message.register(self.handle, Command('auth'))
+        self.router.callback_query.register(self.handle, F.data == 'auth')
         self.router.message.register(self.get_name, AuthStates.waiting_for_name)
         self.router.message.register(self.get_form, AuthStates.waiting_for_form)
 
