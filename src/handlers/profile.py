@@ -15,13 +15,13 @@ class ProfileHandler(BaseHandler):
         user = await db.users.get_user(callback.from_user.id)
         if user:
             text = (
-                f"<b>Ваші дані</b>:\n\n"
-                f"Ім'я: {user.name}\n"
-                f"Клас: {user.form}\n\n"
+                f"👤 <b>Ваші дані</b>:\n\n"
+                f"📝 <b>Ім'я</b>: {user.name}\n"
+                f"🏫 <b>Клас</b>: {user.form}\n\n"
                 f"<i>Щоб змінити дані, натисніть нижче.</i>"
             )
         else:
-            text = "Помилка.."
+            text = "❌ Помилка! Неможливо завантажити дані користувача."
         await callback.message.edit_text(
             text, 
             parse_mode=ParseMode.HTML, 
