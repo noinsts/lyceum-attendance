@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,6 +7,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from ..schemas.user import UserSchema
 from ..models.users import UserModel
+from ..models.reports import ReportModel
 
 
 class UserService:
@@ -31,3 +32,9 @@ class UserService:
         return (await self.session.execute(
             select(UserModel).where(UserModel.user_id == user_id)
         )).scalar_one_or_none()
+    
+    async def get_users_without_reports(self, reports: List[ReportModel]) -> List[UserModel]:
+        forms = [r.form for r in reports]
+        return (await self.session.execute(
+            select(UserModel).where(UserModel.form.notin_(forms))
+        )).scalars().all()
