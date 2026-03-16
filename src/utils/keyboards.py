@@ -11,7 +11,7 @@ def get_hub_keyboard() -> InlineKeyboardMarkup:
 
 def get_profile_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text='Edit', callback_data='profile-edit')],
+        [InlineKeyboardButton(text='Edit', callback_data='auth')],
         [InlineKeyboardButton(text='Back', callback_data='hub')]
     ])
 
