@@ -5,6 +5,7 @@ from .start import StartHandler
 from .profile import ProfileHandler
 from .report import ReportHandler
 from .admin import AdminHandler
+from .test import TestHandler
 
 from src.middlewares.admin import AdminMiddleware
 
@@ -29,6 +30,7 @@ def get_router() -> Router:
         AuthHandler().get_router(),
         ProfileHandler().get_router(),
         ReportHandler().get_router(),
+        TestHandler().get_router(),
         get_admin_router()
     ]
 
