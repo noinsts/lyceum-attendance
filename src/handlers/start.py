@@ -26,7 +26,11 @@ class StartHandler(BaseHandler):
     async def hub(self, event: Message | CallbackQuery, state: FSMContext) -> None:
         await state.clear()
         kwargs = {
-            "text": "Good morging",
+            "text": (
+                "👋 <b>Вітаю!</b>\n\n"
+                "Ви знаходитесь в головному меню.\n"
+                "Обери потрібну дію 👇"
+            ),
             "reply_markup": get_hub_keyboard(),
             "parse_mode": ParseMode.HTML
         }

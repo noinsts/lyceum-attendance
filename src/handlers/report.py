@@ -2,6 +2,7 @@ from datetime import date
 
 from aiogram import F
 from aiogram.types import CallbackQuery, Message
+from aiogram.enums import ParseMode
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
@@ -26,33 +27,38 @@ class ReportHandler(BaseHandler):
     async def handle(self, callback: CallbackQuery, state: FSMContext, db: DBConnector) -> None:
         user = await db.users.get_user(callback.from_user.id)
         if not user:
-            await callback.answer("Помилка авторизації, використайте /auth", show_alert=True)
+            await callback.answer(
+                "❌ Ви не авторизовані.\nВикористайте /auth",
+                show_alert=True
+            )
             return
-        await state.update_data(form=user.form)
         await state.set_state(ReportStates.waiting_for_absentees)
+        await state.update_data(form=user.form)
         await callback.message.edit_text(
-            "Введіть кількість відсутніх",
-            reply_markup=get_back_keyboard('hub')
+            "📋 <b>Створення звіту</b>\n\n"
+            "Введіть кількість <b>відсутніх учнів</b>:",
+            parse_mode=ParseMode.HTML,
+            reply_markup=get_back_keyboard("hub")
         )
-        
 
     async def get_absentees(self, message: Message, state: FSMContext) -> None:
         if not is_positive_int(message.text):
-            await message.answer("Введіть ціле позитивне число")
+            await message.answer("❌ Введіть ціле додатнє число")
             return
         await state.update_data(absentees=message.text)
         await state.set_state(ReportStates.waiting_for_patients)
         await message.answer(
-            "Введіть кількість хворих",
+            "🤒 Тепер введіть кількість <b>хворих</b>",
+            parse_mode=ParseMode.HTML,
             reply_markup=get_back_keyboard('hub')
         )
 
     async def get_patients(self, message: Message, state: FSMContext, db: DBConnector) -> None:
         if not is_positive_int(message.text):
-            await message.answer("Введіть ціле позитивне число")
+            await message.answer("❌ Введіть ціле додатнє число")
             return
         if int(message.text) > int((await state.get_data()).get("absentees")):
-            await message.answer("Кількість хворих не може бути більшою за кількість відсутніх. Це не логічно 🧐")
+            await message.answer("🧐 Кількість хворих не може перевищувати кількість відсутніх.")
             return
         await state.update_data(patients=message.text)
         await self.submit(message, state, db)
@@ -70,6 +76,7 @@ class ReportHandler(BaseHandler):
             )
         )
         await message.answer(
-            "Успішно.",
+            "✅ <b>Звіт успішно створено!</b>",
+            parse_mode=ParseMode.HTML,
             reply_markup=get_back_keyboard('hub')
         )

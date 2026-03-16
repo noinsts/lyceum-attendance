@@ -1,6 +1,7 @@
 from aiogram import F
 from aiogram.types import CallbackQuery, Message
 from aiogram.filters import Command
+from aiogram.enums import ParseMode
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
@@ -25,24 +26,34 @@ class AuthHandler(BaseHandler):
 
     async def handle(self, event: Message | CallbackQuery, state: FSMContext) -> None:
         await state.set_state(AuthStates.waiting_for_name)
-        text = "Введіть ваше ПІБ"
+        text = (
+            "📝 <b>Реєстрація</b>\n\n"
+            "Будь ласка, введіть ваше <b>ПІБ</b>."
+        )
+        kwargs = {
+            'text': text,
+            'parse_mode': ParseMode.HTML
+        }
         if isinstance(event, CallbackQuery):
-            await event.message.edit_text(text)
+            await event.message.edit_text(**kwargs)
         elif isinstance(event, Message):
-            await event.answer(text)
+            await event.answer(**kwargs)
 
     async def get_name(self, message: Message, state: FSMContext) -> None:
         is_valid = validate_name(message.text)
         if not is_valid:
-            await message.answer("Введіть валідне ім'я.")
+            await message.answer("❌ Невірний формат ПІБ.\nСпробуйте ще раз.")
             return
         await state.set_state(AuthStates.waiting_for_form)
         await state.update_data(name=message.text)
-        await message.answer("Вкажіть клас:")
+        await message.answer(
+            "🏫 Тепер вкажіть ваш <b>клас</b>.\nНаприклад: <code>10-А</code>",
+            parse_mode=ParseMode.HTML
+        )
 
     async def get_form(self, message: Message, state: FSMContext, db: DBConnector) -> None:
         if not validate_form(message.text):
-            await message.answer("Введіть валідний клас")
+            await message.answer("❌ Невірний формат класу.\nСпробуйте ще раз.")
             return
         await state.update_data(form=message.text)
         await self.submit(message, state, db)
@@ -58,6 +69,7 @@ class AuthHandler(BaseHandler):
             )
         )
         await message.answer(
-            "Успішно зареєстровано!",
+            "✅ <b>Реєстрація завершена!</b>\n\nЛаскаво просимо 🎉",
+            parse_mode=ParseMode.HTML,
             reply_markup=get_hub_keyboard()
         )
