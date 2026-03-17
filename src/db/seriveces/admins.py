@@ -19,3 +19,8 @@ class AdminService:
         return (await self.session.execute(
             select(AdminModel.name).where(AdminModel.user_id == user_id)
         )).scalar_one_or_none()
+    
+    async def is_admin(self, user_id: int) -> bool:
+        return (await self.session.execute(
+            select(AdminModel).where(AdminModel.user_id == user_id)
+        )).scalar_one_or_none() is not None

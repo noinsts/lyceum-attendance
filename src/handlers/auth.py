@@ -68,8 +68,9 @@ class AuthHandler(BaseHandler):
                 form=data.get("form")
             )
         )
+        is_admin = await db.admins.is_admin(message.from_user.id)
         await message.answer(
             "✅ <b>Реєстрація завершена!</b>\n\nЛаскаво просимо 🎉",
             parse_mode=ParseMode.HTML,
-            reply_markup=get_hub_keyboard()
+            reply_markup=get_hub_keyboard(is_admin)
         )

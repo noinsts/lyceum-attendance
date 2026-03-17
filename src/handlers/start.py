@@ -19,19 +19,20 @@ class StartHandler(BaseHandler):
     async def handle(self, event: Message | CallbackQuery, state: FSMContext, db: DBConnector) -> None:
         exists = await db.users.get_user(event.from_user.id)
         if exists:
-            await self.hub(event, state)
+            await self.hub(event, state, db)
         else:
             await AuthHandler().handle(event, state)
 
-    async def hub(self, event: Message | CallbackQuery, state: FSMContext) -> None:
+    async def hub(self, event: Message | CallbackQuery, state: FSMContext, db: DBConnector) -> None:
         await state.clear()
+        is_admin = await db.admins.is_admin(event.from_user.id)
         kwargs = {
             "text": (
                 "👋 <b>Вітаю!</b>\n\n"
                 "Ви знаходитесь в головному меню.\n"
                 "Обери потрібну дію 👇"
             ),
-            "reply_markup": get_hub_keyboard(),
+            "reply_markup": get_hub_keyboard(is_admin),
             "parse_mode": ParseMode.HTML
         }
         if isinstance(event, Message):
