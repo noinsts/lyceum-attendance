@@ -13,11 +13,13 @@ class ProfileHandler(BaseHandler):
 
     async def handle(self, callback: CallbackQuery, db: DBConnector) -> None:
         user = await db.users.get_user(callback.from_user.id)
+        is_admin = await db.admins.is_admin(callback.from_user.id)
         if user:
             text = (
                 f"👤 <b>Ваші дані</b>:\n\n"
                 f"📝 <b>Ім'я</b>: {user.name}\n"
-                f"🏫 <b>Клас</b>: {user.form}\n\n"
+                f"🏫 <b>Клас</b>: {user.form}\n"
+                f"👑 <b>Адміністратор</b>: {'Так' if is_admin else 'Ні'}\n\n"
                 f"<i>Щоб змінити дані, натисніть нижче.</i>"
             )
         else:
