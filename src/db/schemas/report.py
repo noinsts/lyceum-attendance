@@ -8,3 +8,4 @@ class ReportSchema(BaseModel):
     date: date
     absentees: int
     patients: int
+    total: int

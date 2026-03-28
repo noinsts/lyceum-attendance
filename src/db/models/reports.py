@@ -11,3 +11,4 @@ class ReportModel(BaseModel):
     date: Mapped[Date] = mapped_column(Date, nullable=False)
     absentees: Mapped[int] = mapped_column(Integer, nullable=False)
     patients: Mapped[int] = mapped_column(Integer, nullable=False)
+    total: Mapped[int] = mapped_column(Integer, nullable=False)
