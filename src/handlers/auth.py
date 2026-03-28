@@ -5,16 +5,19 @@ from aiogram.enums import ParseMode
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
+
 from .base import BaseHandler
 from src.db.connector import DBConnector
 from src.db.schemas.user import UserSchema
+from src.db.schemas.form import FormSchema
 from src.utils.keyboards import get_hub_keyboard
-from src.utils.validators import validate_form, validate_name
+from src.utils.validators import validate_form, validate_name, is_positive_int
 
 
 class AuthStates(StatesGroup):
     waiting_for_name = State()
     waiting_for_form = State()
+    waiting_for_student_count = State()
 
 
 class AuthHandler(BaseHandler):
@@ -23,6 +26,7 @@ class AuthHandler(BaseHandler):
         self.router.callback_query.register(self.handle, F.data == 'auth')
         self.router.message.register(self.get_name, AuthStates.waiting_for_name)
         self.router.message.register(self.get_form, AuthStates.waiting_for_form)
+        self.router.message.register(self.get_student_count, AuthStates.waiting_for_student_count)
 
     async def handle(self, event: Message | CallbackQuery, state: FSMContext) -> None:
         await state.set_state(AuthStates.waiting_for_name)
@@ -51,11 +55,22 @@ class AuthHandler(BaseHandler):
             parse_mode=ParseMode.HTML
         )
 
-    async def get_form(self, message: Message, state: FSMContext, db: DBConnector) -> None:
+    async def get_form(self, message: Message, state: FSMContext) -> None:
         if not validate_form(message.text):
             await message.answer("❌ Невірний формат класу.\nСпробуйте ще раз.")
             return
         await state.update_data(form=message.text)
+        await state.set_state(AuthStates.waiting_for_student_count)
+        await message.answer(
+            "👥 Вкажіть кількість учнів у вашому класі.",
+            parse_mode=ParseMode.HTML
+        )
+
+    async def get_student_count(self, message: Message, state: FSMContext, db: DBConnector) -> None:
+        if not is_positive_int(message.text):
+            await message.answer("❌ Невірний формат кількості учнів.\nСпробуйте ще раз.")
+            return
+        await state.update_data(student_count=message.text)
         await self.submit(message, state, db)
 
     async def submit(self, message: Message, state: FSMContext, db: DBConnector) -> None:
@@ -63,9 +78,15 @@ class AuthHandler(BaseHandler):
         await state.clear()
         await db.users.add_user(
             UserSchema(
-                user_id=message.from_user.id,
+                user_id=int(message.from_user.id),
                 name=data.get("name"),
                 form=data.get("form")
+            )
+        )
+        await db.forms.add_form(
+            FormSchema(
+                name=data.get("form"),
+                students_count=int(data.get("student_count"))
             )
         )
         is_admin = await db.admins.is_admin(message.from_user.id)
