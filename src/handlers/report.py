@@ -34,6 +34,8 @@ class ReportHandler(BaseHandler):
             return
         await state.set_state(ReportStates.waiting_for_absentees)
         await state.update_data(form=user.form)
+        form = await db.forms.get_form_by_name(user.form)
+        await state.update_data(student_count=form.students_count)
         await callback.message.edit_text(
             "📋 <b>Створення звіту</b>\n\n"
             "Введіть кількість <b>відсутніх учнів</b>:",
@@ -72,7 +74,8 @@ class ReportHandler(BaseHandler):
                 form=data.get("form"),
                 date=date.today(),
                 absentees=data.get("absentees"),
-                patients=data.get("patients")
+                patients=data.get("patients"),
+                total=data.get("student_count")
             )
         )
         await message.answer(
