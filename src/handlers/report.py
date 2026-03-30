@@ -21,8 +21,8 @@ class ReportStates(StatesGroup):
 class ReportHandler(BaseHandler):
     def register_handlers(self):
         self.router.callback_query.register(self.handle, F.data == 'send_report')
-        self.router.message.register(self.get_absentees, ReportStates.waiting_for_absentees)
-        self.router.message.register(self.get_patients, ReportStates.waiting_for_patients)
+        self.router.message.register(self.get_absentees, ReportStates.waiting_for_absentees, F.text)
+        self.router.message.register(self.get_patients, ReportStates.waiting_for_patients, F.text)
 
     async def handle(self, callback: CallbackQuery, state: FSMContext, db: DBConnector) -> None:
         user = await db.users.get_user(callback.from_user.id)

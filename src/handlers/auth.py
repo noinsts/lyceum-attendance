@@ -24,9 +24,9 @@ class AuthHandler(BaseHandler):
     def register_handlers(self):
         self.router.message.register(self.handle, Command('auth'))
         self.router.callback_query.register(self.handle, F.data == 'auth')
-        self.router.message.register(self.get_name, AuthStates.waiting_for_name)
-        self.router.message.register(self.get_form, AuthStates.waiting_for_form)
-        self.router.message.register(self.get_student_count, AuthStates.waiting_for_student_count)
+        self.router.message.register(self.get_name, AuthStates.waiting_for_name, F.text)
+        self.router.message.register(self.get_form, AuthStates.waiting_for_form, F.text)
+        self.router.message.register(self.get_student_count, AuthStates.waiting_for_student_count, F.text)
 
     async def handle(self, event: Message | CallbackQuery, state: FSMContext) -> None:
         await state.set_state(AuthStates.waiting_for_name)
