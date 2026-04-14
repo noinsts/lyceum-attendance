@@ -1,20 +1,22 @@
 from datetime import date
 
 from aiogram import F
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, BufferedInputFile
 from aiogram.filters import Command
 from aiogram.enums import ParseMode
 
 from .base import BaseHandler
 from src.db.connector import DBConnector
 from src.utils.keyboards import get_admin_keyboard, get_back_keyboard
+from src.utils.spreedsheet import build_report_excel
 
 
 class AdminHandler(BaseHandler):
     def register_handlers(self) -> None:
         self.router.message.register(self.handle, Command('admin'))
         self.router.callback_query.register(self.handle, F.data == 'admin')
-        self.router.callback_query.register(self.report, F.data == 'admin_report')
+        self.router.callback_query.register(self.send_report, F.data == 'admin_report')
+        self.router.callback_query.register(self.download_report, F.data == 'admin_download_report')
 
     async def handle(self, event: Message | CallbackQuery, db: DBConnector) -> None:
         name = await db.admins.get_name(event.from_user.id)
@@ -32,7 +34,7 @@ class AdminHandler(BaseHandler):
         elif isinstance(event, CallbackQuery):
             await event.message.edit_text(**kwargs)
 
-    async def report(self, callback: CallbackQuery, db: DBConnector) -> None:
+    async def send_report(self, callback: CallbackQuery, db: DBConnector) -> None:
         reports = await db.reports.get_reports_by_day(date.today())
         prompt = f"<b>Звіт на {date.today()}</b>\n\n"
         for report in reports:
@@ -42,4 +44,22 @@ class AdminHandler(BaseHandler):
             reply_markup=get_back_keyboard('admin'),
             parse_mode=ParseMode.HTML
         )
-        
+    
+    async def download_report(self, callback: CallbackQuery, db: DBConnector) -> None:
+        reports = await db.reports.get_reports_by_day(date.today())
+        data = [
+            {
+                "class": report.form,
+                "absent": report.absentees,
+                "sick": report.patients,
+                "total": report.student_count
+            }
+            for report in reports
+        ]
+        bytes = build_report_excel(data)
+        file = BufferedInputFile(bytes, filename=f"report_{date.today()}.xlsx")
+        await callback.message.delete()
+        await callback.message.answer_document(
+            document=file,
+            caption=f"📊 Звіт на {date.today()}",
+        )
