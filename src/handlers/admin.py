@@ -52,7 +52,7 @@ class AdminHandler(BaseHandler):
                 "class": report.form,
                 "absent": report.absentees,
                 "sick": report.patients,
-                "total": report.student_count
+                "total": report.total
             }
             for report in reports
         ]
