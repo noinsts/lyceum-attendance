@@ -6,7 +6,7 @@ from .base import BaseModel
 class ReportModel(BaseModel):
     __tablename__ = "reports"
     __table_args__ = (
-        UniqueConstraint("form", "date", name="uq_form_date")
+        UniqueConstraint("form", "date", name="uq_form_date"),
     )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
