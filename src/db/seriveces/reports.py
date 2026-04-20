@@ -1,9 +1,10 @@
 from datetime import datetime
 from typing import List
 
-from sqlalchemy import select, insert
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.dialects.postgresql import insert
 
 from ..schemas.report import ReportSchema
 from ..models.reports import ReportModel
