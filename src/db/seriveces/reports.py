@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List
 
-from sqlalchemy import select
+from sqlalchemy import select, insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -15,7 +15,18 @@ class ReportService:
 
     async def add_report(self, data: ReportSchema) -> None:
         try:
-            self.session.add(ReportModel(**data.model_dump()))
+            query = insert(ReportModel).values(
+                **data.model_dump()
+            )
+            query = query.on_conflict_do_update(
+                index_elements=["form", "date"],
+                set_={
+                    "absentees": data.absentees,
+                    "patients": data.patients,
+                    "total": data.total
+                }
+            )
+            await self.session.execute(query)
             await self.session.commit()
         except SQLAlchemyError as e:
             await self.session.rollback()
