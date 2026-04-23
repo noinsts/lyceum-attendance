@@ -36,8 +36,8 @@ class LyceumBot:
                 send_reminder,
                 trigger="cron",
                 day_of_week="mon-fri",
-                hour=8,
-                minute=55,
+                hour=9,
+                minute=10,
                 args=[self.bot]
             )
             self.scheduler.start()
