@@ -1,4 +1,5 @@
-from datetime import date
+from datetime import date, datetime, time
+import pytz
 
 from aiogram import F
 from aiogram.types import CallbackQuery, Message
@@ -29,6 +30,16 @@ class ReportHandler(BaseHandler):
         if not user:
             await callback.answer(
                 "❌ Ви не авторизовані.\nВикористайте /auth",
+                show_alert=True
+            )
+            return
+        tz = pytz.timezone("Europe/Kyiv")
+        now = datetime.now(tz).time()
+        limit = time(9, 25)
+        if now >= limit:
+            await callback.message.edit_text(
+                "⏰ Час для створення звіту минув. Спробуйте завтра зранку.",
+                reply_markup=get_back_keyboard('hub'),
                 show_alert=True
             )
             return
