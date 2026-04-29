@@ -33,16 +33,16 @@ class ReportHandler(BaseHandler):
                 show_alert=True
             )
             return
-        tz = pytz.timezone("Europe/Kyiv")
-        now = datetime.now(tz).time()
-        limit = time(9, 25)
-        if now >= limit:
-            await callback.message.edit_text(
-                "⏰ Час для створення звіту минув. Спробуйте завтра зранку.",
-                reply_markup=get_back_keyboard('hub'),
-                show_alert=True
-            )
-            return
+        # tz = pytz.timezone("Europe/Kyiv")
+        # now = datetime.now(tz).time()
+        # limit = time(9, 25)
+        # if now >= limit:
+        #     await callback.message.edit_text(
+        #         "⏰ Час для створення звіту минув. Спробуйте завтра зранку.",
+        #         reply_markup=get_back_keyboard('hub'),
+        #         show_alert=True
+        #     )
+        #     return
         await state.set_state(ReportStates.waiting_for_absentees)
         await state.update_data(form=user.form)
         form = await db.forms.get_form_by_name(user.form)
