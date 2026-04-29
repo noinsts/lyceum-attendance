@@ -9,9 +9,6 @@ def get_hub_keyboard(is_admin: bool = False) -> InlineKeyboardMarkup:
         keyboard.append(
             [InlineKeyboardButton(text='👑 Адмінка', callback_data='admin', style='danger')],
         )
-    keyboard.append(
-        [InlineKeyboardButton(text='🆘 Допомога', url='https://t.me/omyzsh', style='danger')]
-    )
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
 def get_profile_keyboard() -> InlineKeyboardMarkup:
