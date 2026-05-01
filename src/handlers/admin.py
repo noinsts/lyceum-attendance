@@ -56,6 +56,7 @@ class AdminHandler(BaseHandler):
             }
             for report in reports
         ]
+        data.sort(key=lambda x: x['class'])
         bytes = build_report_excel(data)
         file = BufferedInputFile(bytes, filename=f"report_{date.today()}.xlsx")
         await callback.message.delete()
