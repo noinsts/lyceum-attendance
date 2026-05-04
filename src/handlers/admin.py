@@ -40,7 +40,12 @@ class AdminHandler(BaseHandler):
         reports.sort(key=attrgetter('form'))
         prompt = f"<b>Звіт на {date.today()}</b>\n\n"
         for report in reports:
-            prompt += f"<b>{report.form}</b>: відсутніх: {report.absentees}, хворих: {report.patients}, всього: {report.total}\n"
+            prompt += f"<b>{report.form}</b>: відсутніх: {report.absentees}, хворих: {report.patients}\n"
+
+        total_absentees = sum(report.absentees for report in reports)
+        total_patients = sum(report.patients for report in reports)
+        prompt += f"\n<b>Всього відсутніх:</b> {total_absentees}\n<b>Всього хворих:</b> {total_patients}"
+        
         await callback.message.edit_text(
             prompt,
             reply_markup=get_back_keyboard('admin'),
