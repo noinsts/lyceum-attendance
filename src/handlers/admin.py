@@ -18,6 +18,7 @@ class AdminHandler(BaseHandler):
         self.router.callback_query.register(self.handle, F.data == 'admin')
         self.router.callback_query.register(self.send_report, F.data == 'admin_report')
         self.router.callback_query.register(self.download_report, F.data == 'admin_download_report')
+        self.router.callback_query.register(self.did_not_send_report, F.data == 'admin_did_not_send_report')
 
     async def handle(self, event: Message | CallbackQuery, db: DBConnector) -> None:
         name = await db.admins.get_name(event.from_user.id)
@@ -70,4 +71,17 @@ class AdminHandler(BaseHandler):
         await callback.message.answer_document(
             document=file,
             caption=f"📊 Звіт на {date.today()}",
+        )
+
+    async def did_not_send_report(self, callback: CallbackQuery, db: DBConnector) -> None:
+        all_forms = await db.forms.get_all_form_names()
+        sent_reports = await db.reports.get_reports_by_day(date.today())
+        did_not_send = [form for form in all_forms if form not in [report.form for report in sent_reports]]
+        prompt = "<b>Список класів, які не надіслали звіт сьогодні:</b>\n\n"
+        for form in did_not_send:
+            prompt += f"<b>{form}</b>\n"
+        await callback.message.edit_text(
+            prompt,
+            reply_markup=get_back_keyboard('admin'),
+            parse_mode=ParseMode.HTML
         )
