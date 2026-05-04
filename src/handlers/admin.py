@@ -1,4 +1,5 @@
 from datetime import date
+from operator import attrgetter
 
 from aiogram import F
 from aiogram.types import Message, CallbackQuery, BufferedInputFile
@@ -36,15 +37,16 @@ class AdminHandler(BaseHandler):
 
     async def send_report(self, callback: CallbackQuery, db: DBConnector) -> None:
         reports = await db.reports.get_reports_by_day(date.today())
+        reports.sort(key=attrgetter('form'))
         prompt = f"<b>Звіт на {date.today()}</b>\n\n"
         for report in reports:
-            prompt += f"<b>{report.form}</b>: відсутніх: {report.absentees}, хворих: {report.patients}\n"
+            prompt += f"<b>{report.form}</b>: відсутніх: {report.absentees}, хворих: {report.patients}, всього: {report.total}\n"
         await callback.message.edit_text(
             prompt,
             reply_markup=get_back_keyboard('admin'),
             parse_mode=ParseMode.HTML
         )
-    
+
     async def download_report(self, callback: CallbackQuery, db: DBConnector) -> None:
         reports = await db.reports.get_reports_by_day(date.today())
         data = [
