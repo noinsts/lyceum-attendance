@@ -77,6 +77,7 @@ class AdminHandler(BaseHandler):
         all_forms = await db.forms.get_all_form_names()
         sent_reports = await db.reports.get_reports_by_day(date.today())
         did_not_send = [form for form in all_forms if form not in [report.form for report in sent_reports]]
+        did_not_send.sort()
         prompt = "<b>Список класів, які не надіслали звіт сьогодні:</b>\n\n"
         for form in did_not_send:
             prompt += f"<b>{form}</b>\n"
