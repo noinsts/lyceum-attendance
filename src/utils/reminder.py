@@ -5,6 +5,7 @@ from aiogram.enums import ParseMode
 
 from src.db.connector import DBConnector
 from src.db.db import session_maker
+from src.utils.keyboards import get_create_report_keyboard
 
 async def send_reminder(bot: Bot) -> None:
     async with session_maker() as session:
@@ -17,6 +18,11 @@ async def send_reminder(bot: Bot) -> None:
         users = await db.users.get_users_without_reports(reports)
         for user in users:
             try:
-                await bot.send_message(user.user_id, text, parse_mode=ParseMode.HTML)
+                await bot.send_message(
+                    user.user_id,
+                    text,
+                    parse_mode=ParseMode.HTML,
+                    reply_markup=get_create_report_keyboard()
+                )
             except Exception:
                 pass
