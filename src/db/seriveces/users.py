@@ -27,12 +27,17 @@ class UserService:
         except SQLAlchemyError as e:
             await self.session.rollback()
             raise e
-        
+
     async def get_user(self, user_id: int) -> Optional[UserModel]:
         return (await self.session.execute(
             select(UserModel).where(UserModel.user_id == user_id)
         )).scalar_one_or_none()
-    
+
+    async def get_all_users(self) -> List[UserModel]:
+        return (await self.session.execute(
+            select(UserModel)
+        )).scalars().all()
+
     async def get_users_without_reports(self, reports: List[ReportModel]) -> List[UserModel]:
         forms = [r.form for r in reports]
         return (await self.session.execute(
