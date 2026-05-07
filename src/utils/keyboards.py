@@ -27,10 +27,17 @@ def get_admin_keyboard() -> InlineKeyboardMarkup:
         [InlineKeyboardButton(text='📊 Отримати звіт', callback_data='admin_report', style='primary')],
         [InlineKeyboardButton(text='📥 Завантажити звіт', callback_data='admin_download_report', style='primary')],
         [InlineKeyboardButton(text='⚠️ Не надіслали звіт', callback_data='admin_did_not_send_report', style='danger')],
+        [InlineKeyboardButton(text='📩 Надіслати оголошення', callback_data='admin_broadcast', style='danger')],
         [InlineKeyboardButton(text='⬅️ Назад', callback_data='hub')]
     ])
 
 def get_create_report_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="✍️ Створити звіт", callback_data='send_report', style='primary')],
+    ])
+
+def get_confirmation_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="Yes", callback_data='submit')],
+        [InlineKeyboardButton(text="No", callback_data='cancel')],
     ])
