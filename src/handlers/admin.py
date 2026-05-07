@@ -87,14 +87,27 @@ class AdminHandler(BaseHandler):
         )
 
     async def did_not_send_report(self, callback: CallbackQuery, db: DBConnector) -> None:
+        debug_forms = [
+            '10-Г', # липовий клас Василя Анатолійовича
+            '10-Д', # липовий клас Андрій
+            '10-З', # ще один липовий клас Андрія
+        ]
+        # їх ми не включаємо до списку не надіславших звіт
         all_forms = await db.forms.get_all_form_names()
         sent_reports = await db.reports.get_reports_by_day(date.today())
-        did_not_send = [form for form in all_forms if form not in [report.form for report in sent_reports]]
+        sent_form_names = [report.form for report in sent_reports]
+        did_not_send = [
+            form for form in all_forms
+            if form not in sent_form_names and form not in debug_forms
+        ]
         did_not_send.sort()
 
-        prompt = "<b>Список класів, які не надіслали звіт сьогодні:</b>\n\n"
-        for form in did_not_send:
-            prompt += f"<b>{form}</b>\n"
+        if len(did_not_send) == 0:
+            prompt = "Всі класи надіслали звіт 🎉"
+        else:
+            prompt = "<b>Список класів, які не надіслали звіт сьогодні:</b>\n\n"
+            for form in did_not_send:
+                prompt += f"<b>{form}</b>\n"
 
         await callback.message.edit_text(
             prompt,
