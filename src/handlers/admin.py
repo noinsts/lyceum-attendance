@@ -1,5 +1,5 @@
+import re
 from datetime import date
-from operator import attrgetter
 
 from aiogram import F
 from aiogram.fsm.context import FSMContext
@@ -51,7 +51,7 @@ class AdminHandler(BaseHandler):
 
     async def send_report(self, callback: CallbackQuery, db: DBConnector) -> None:
         reports = await db.reports.get_reports_by_day(date.today())
-        reports.sort(key=attrgetter('form'))
+        reports.sort(key=lambda r: self._form_sort(r.form))
         prompt = f"<b>Звіт на {date.today()}</b>\n\n"
         for report in reports:
             prompt += f"<b>{report.form}</b>: відсутніх: {report.absentees}, хворих: {report.patients}\n"
@@ -77,7 +77,7 @@ class AdminHandler(BaseHandler):
             }
             for report in reports
         ]
-        data.sort(key=lambda x: x['class'])
+        data.sort(key=lambda x: self._form_sort(x['class']))
         bytes = build_report_excel(data)
         file = BufferedInputFile(bytes, filename=f"report_{date.today()}.xlsx")
         await callback.message.delete()
@@ -100,7 +100,7 @@ class AdminHandler(BaseHandler):
             form for form in all_forms
             if form not in sent_form_names and form not in debug_forms
         ]
-        did_not_send.sort()
+        did_not_send.sort(key=self._form_sort)
 
         if len(did_not_send) == 0:
             prompt = "Всі класи надіслали звіт 🎉"
@@ -167,3 +167,16 @@ class AdminHandler(BaseHandler):
             reply_markup=get_back_keyboard('admin'),
             parse_mode=ParseMode.HTML
         )
+
+    # ---------------------------------------------------
+    # Utilities
+    # ---------------------------------------------------
+
+    @staticmethod
+    def _form_sort(form: str):
+        match = re.match(r'(\d+)', form)
+        if match:
+            num = int(match.group(1))
+            suffix = form[match.end():]
+            return (num, suffix)
+        return (0, form)
