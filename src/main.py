@@ -40,7 +40,7 @@ class LyceumBot:
                 minute=10,
                 args=[self.bot]
             )
-            self.scheduler.start()
+            #self.scheduler.start()
 
             self.dp.include_router(get_router())
             await self.dp.start_polling(self.bot)
