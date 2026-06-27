@@ -28,6 +28,7 @@ def get_admin_keyboard() -> InlineKeyboardMarkup:
         [InlineKeyboardButton(text='📥 Завантажити звіт', callback_data='admin_download_report', style='primary')],
         [InlineKeyboardButton(text='⚠️ Не надіслали звіт', callback_data='admin_did_not_send_report', style='danger')],
         [InlineKeyboardButton(text='📩 Надіслати оголошення', callback_data='admin_broadcast', style='danger')],
+        [InlineKeyboardButton(text='Тест оновленої подачі звіту', callback_data='testlib', style='danger')],
         [InlineKeyboardButton(text='⬅️ Назад', callback_data='hub')]
     ])
 
