@@ -2,6 +2,7 @@ from typing import List
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.dialects.postgresql import insert
 
 from ..models.forms import FormsModel
 from ..schemas.form import FormSchema
@@ -17,7 +18,9 @@ class FormService:
         )).scalars().all()
     
     async def add_form(self, data: FormSchema) -> None:
-        self.session.add(FormsModel(**data.model_dump()))
+        await self.session.execute(
+            insert(FormsModel).values(**data.model_dump()).on_conflict_do_nothing(index_elements=['name'])
+        )
         await self.session.commit()
 
     async def get_form_by_name(self, name: str) -> FormSchema | None:
