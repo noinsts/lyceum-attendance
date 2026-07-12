@@ -1,8 +1,7 @@
 from aiogram import F
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, InputRichMessage
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
-from aiogram.enums import ParseMode
 
 from src.db.connector import DBConnector
 from src.utils.keyboards import get_hub_keyboard
@@ -26,16 +25,18 @@ class StartHandler(BaseHandler):
     async def hub(self, event: Message | CallbackQuery, state: FSMContext, db: DBConnector) -> None:
         await state.clear()
         is_admin = await db.admins.is_admin(event.from_user.id)
+
+        text = (
+            "# 👋🏻 Вітаємо!\n"
+            "Ви знаходитесь в головному меню. Оберіть, що вас цікавить 👇🏻"
+        )
+
         kwargs = {
-            "text": (
-                "👋 <b>Вітаю!</b>\n\n"
-                "Ви знаходитесь в головному меню.\n"
-                "Обери потрібну дію 👇"
-            ),
+            "text": text,
+            "rich_message": InputRichMessage(markdown=text),
             "reply_markup": get_hub_keyboard(is_admin),
-            "parse_mode": ParseMode.HTML
         }
         if isinstance(event, Message):
-            await event.answer(**kwargs)
+            await event.answer_rich(**kwargs)
         elif isinstance(event, CallbackQuery):
             await event.message.edit_text(**kwargs)
