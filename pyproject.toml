@@ -7,7 +7,7 @@ authors=["noinst"]
 
 [tool.poetry.dependencies]
 python = ">=3.11,<3.15"
-aiogram="^3.26.0"
+aiogram="^3.29.1"
 python-dotenv="^1.1.0"
 sqlalchemy = "^2.0.42"
 psycopg2-binary = "^2.9.10"
