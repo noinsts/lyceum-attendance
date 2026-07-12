@@ -3,8 +3,7 @@
 """
 
 from aiogram import F
-from aiogram.enums import ParseMode
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, InputRichMessage
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.filters.callback_data import CallbackData
@@ -22,10 +21,10 @@ class TestLibStates(StatesGroup):
 
 
 STUDENTS = [
-    "Учень 1",
-    "Учень 2",
-    "Учень 3",
-    "Учень 23",
+    "Шевченко Тарас Григорович",
+    "Франко Іван Якович",
+    "Остапенко Михайло Олексійович",
+    "Михайленко Остап Олексійович",
 ]
 
 
@@ -72,15 +71,21 @@ class TestLibHandler(BaseHandler):
         init_statuses = {idx: "present" for idx in range(len(STUDENTS))}
         await state.update_data(statuses=init_statuses)
 
+        text = (
+            "# 📋 Створення звіту (1/2)\n\n"
+            f"> Зверніть увагу: це демка, яка не вміє надсилати звіт\n\n"
+            "Для кожного учня оберіть відповідний колір\n\n"
+            "Зміна кольору відбувається натисканням на потрібного учня\n"
+            "### Умовні позначення:\n"
+            "* 🟢 - у школі;\n"
+            "* 🔴 - відсутній;\n"
+            "* 🔵 - хворий.\n"
+        )
+
         await callback.message.edit_text(
-            text=(
-                "<b>Оберіть учнів:</b>\n\n"
-                "🟢 - у школі;\n"
-                "🔴 - відсутній;\n"
-                "🔵 - хворий.\n"
-            ),
+            text=text,
+            rich_message=InputRichMessage(markdown=text),
             reply_markup=build_keyboard(init_statuses),
-            parse_mode=ParseMode.HTML,
         )
 
     async def select_student_handler(self, callback: CallbackQuery, state: FSMContext, callback_data: StudentCallbackData) -> None:
@@ -121,15 +126,18 @@ class TestLibHandler(BaseHandler):
             elif status == "sick":
                 patients.append(STUDENTS[idx])
 
-        absentees_text = "\n".join(f"- {a}" for a in absentees) if absentees else "-"
-        patients_text = "\n".join(f"- {p}" for p in patients) if patients else "-"
+        absentees_text = "\n".join(f"* {a}" for a in absentees) if absentees else "Всі присутні 🤩"
+        patients_text = "\n".join(f"* {p}" for p in patients) if patients else "Всі здорові 🤩"
 
         response = (
-            f"<b>Кількість відсутніх учнів:</b>\n{absentees_text}\n\n"
-            f"<b>Кількість хворих учнів:</b>\n{patients_text}"
+            f"# 📋 Створення звіту (2/2)\n"
+            f"> Зверніть увагу: це демка, яка не вміє надсилати звіт\n\n"
+            f"Надіслані наступні дані:\n\n"
+            f"### Список відсутніх учнів:\n{absentees_text}\n\n"
+            f"### Список хворих учнів:\n{patients_text}"
         )
         await callback.message.edit_text(
             text=response,
-            parse_mode=ParseMode.HTML,
+            rich_message=InputRichMessage(markdown=response),
             reply_markup=get_back_keyboard('admin')
         )

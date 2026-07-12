@@ -1,16 +1,15 @@
 from aiogram import F
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, Message, InputRichMessage
 from aiogram.filters import Command
 from aiogram.enums import ParseMode
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
-
 from .base import BaseHandler
 from src.db.connector import DBConnector
 from src.db.schemas.user import UserSchema
 from src.db.schemas.form import FormSchema
-from src.utils.keyboards import get_hub_keyboard
+from src.utils.keyboards import get_start_work_keyboard
 from src.utils.validators import validate_form, validate_name, is_positive_int
 
 
@@ -31,17 +30,18 @@ class AuthHandler(BaseHandler):
     async def handle(self, event: Message | CallbackQuery, state: FSMContext) -> None:
         await state.set_state(AuthStates.waiting_for_name)
         text = (
-            "📝 <b>Реєстрація</b>\n\n"
-            "Будь ласка, введіть ваше <b>ПІБ</b>."
+            "# 📝 Реєстрація (1/3)\n"
+            "Будь ласка, введіть ваше <b>ПІБ</b> 🙌🏻"
         )
         kwargs = {
             'text': text,
+            'rich_message': InputRichMessage(markdown=text),
             'parse_mode': ParseMode.HTML
         }
         if isinstance(event, CallbackQuery):
             await event.message.edit_text(**kwargs)
         elif isinstance(event, Message):
-            await event.answer(**kwargs)
+            await event.answer_rich(**kwargs)
 
     async def get_name(self, message: Message, state: FSMContext) -> None:
         is_valid = validate_name(message.text)
@@ -50,8 +50,12 @@ class AuthHandler(BaseHandler):
             return
         await state.set_state(AuthStates.waiting_for_form)
         await state.update_data(name=message.text)
-        await message.answer(
-            "🏫 Тепер вкажіть ваш <b>клас</b>.\nНаприклад: <code>10-А</code>",
+        await message.answer_rich(
+            rich_message=InputRichMessage(markdown=(
+                "# 📝 Реєстрація (2/3)\n"
+                "Тепер вкажіть ваш **клас**.\n"
+                "Наприклад: `10-А`"
+            )),
             parse_mode=ParseMode.HTML
         )
 
@@ -61,8 +65,11 @@ class AuthHandler(BaseHandler):
             return
         await state.update_data(form=message.text)
         await state.set_state(AuthStates.waiting_for_student_count)
-        await message.answer(
-            "👥 Вкажіть кількість учнів у вашому класі.",
+        await message.answer_rich(
+            rich_message=InputRichMessage(markdown=(
+                "# 📝 Реєстрація (3/3)\n"
+                "Чудово! Вкажіть **кількість учнів** у вашому класі. 👥"
+            )),
             parse_mode=ParseMode.HTML
         )
 
@@ -80,18 +87,20 @@ class AuthHandler(BaseHandler):
             UserSchema(
                 user_id=int(message.from_user.id),
                 name=data.get("name"),
-                form=data.get("form")
+                form=data.get("form"),
             )
         )
         await db.forms.add_form(
             FormSchema(
                 name=data.get("form"),
-                students_count=int(data.get("student_count"))
+                students_count=int(data.get("student_count")),
             )
         )
-        is_admin = await db.admins.is_admin(message.from_user.id)
-        await message.answer(
-            "✅ <b>Реєстрація завершена!</b>\n\nЛаскаво просимо 🎉",
+        await message.answer_rich(
+            rich_message=InputRichMessage(markdown=(
+                "# 📝 Реєстрація завершена\n"
+                "Ласкаво просимо 🎉"
+            )),
             parse_mode=ParseMode.HTML,
-            reply_markup=get_hub_keyboard(is_admin)
+            reply_markup=get_start_work_keyboard(),
         )
