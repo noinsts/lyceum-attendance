@@ -1,6 +1,5 @@
 from aiogram import F
-from aiogram.types import CallbackQuery
-from aiogram.enums import ParseMode
+from aiogram.types import CallbackQuery, InputRichMessage
 
 from .base import BaseHandler
 from src.db.connector import DBConnector
@@ -16,16 +15,18 @@ class ProfileHandler(BaseHandler):
         is_admin = await db.admins.is_admin(callback.from_user.id)
         if user:
             text = (
-                f"👤 <b>Ваші дані</b>:\n\n"
-                f"📝 <b>Ім'я</b>: {user.name}\n"
-                f"🏫 <b>Клас</b>: {user.form}\n"
-                f"👑 <b>Адміністратор</b>: {'Так' if is_admin else 'Ні'}\n\n"
-                f"<i>Щоб змінити дані, натисніть нижче.</i>"
+                f"# 👤 <b>Ваші дані</b>:\n\n"
+                f"* 📝 <b>Ім'я</b>: {user.name}\n"
+                f"* 🏫 <b>Клас</b>: {user.form}\n"
+                f"* 👑 <b>Адміністратор</b>: {'Так' if is_admin else 'Ні'}"
             )
         else:
-            text = "❌ Помилка! Неможливо завантажити дані користувача."
+            text = (
+                "# ❌ Помилка\n "
+                "Неможливо завантажити дані користувача."
+            )
         await callback.message.edit_text(
-            text, 
-            parse_mode=ParseMode.HTML, 
+            text=text,
+            rich_message=InputRichMessage(markdown=text),
             reply_markup=get_profile_keyboard()
         )
