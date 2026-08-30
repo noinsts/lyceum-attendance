@@ -2,7 +2,8 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 def get_hub_keyboard(is_admin: bool = False) -> InlineKeyboardMarkup:
     keyboard = [
-        [InlineKeyboardButton(text="✍️ Створити звіт", callback_data='send_report', style='primary')],
+        [InlineKeyboardButton(text="✍️ Відвідуваність", callback_data='send_report', style='primary')],
+        [InlineKeyboardButton(text="🍞 Харчування", callback_data='food_report', style='success')],
         [InlineKeyboardButton(text='👤 Профіль', callback_data='profile')],
     ]
     if is_admin:
@@ -24,11 +25,12 @@ def get_back_keyboard(back_trigger: str, style: str = 'danger') -> InlineKeyboar
 
 def get_admin_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text='📊 Отримати звіт', callback_data='admin_report', style='primary')],
-        [InlineKeyboardButton(text='📥 Завантажити звіт', callback_data='admin_download_report', style='primary')],
-        [InlineKeyboardButton(text='⚠️ Не надіслали звіт', callback_data='admin_did_not_send_report', style='danger')],
+        [InlineKeyboardButton(text='🍞 Сьогоднішній звіт харчування', callback_data='admin_food_report', style='success')],
+        [InlineKeyboardButton(text='📊 Сьогоднішня відвідуваність', callback_data='admin_report', style='primary')],
+        [InlineKeyboardButton(text='📥 Завантажити сьогоднішню відвідуваність', callback_data='admin_download_report', style='primary')],
+        [InlineKeyboardButton(text='⚠️ Не надіслали звіт відвідуваності', callback_data='admin_did_not_send_report', style='primary')],
         [InlineKeyboardButton(text='📩 Надіслати оголошення', callback_data='admin_broadcast', style='danger')],
-        [InlineKeyboardButton(text='🧪 Тест оновленої подачі звіту', callback_data='testlib', style='danger')],
+        [InlineKeyboardButton(text='🧪 Тест оновленої подачі звіту відвідуваності', callback_data='testlib', style='danger')],
         [InlineKeyboardButton(text='⬅️ До головного меню', callback_data='hub')]
     ])
 
