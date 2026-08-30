@@ -24,6 +24,7 @@ class AdminHandler(BaseHandler):
     def register_handlers(self) -> None:
         self.router.message.register(self.handle, Command('admin'))
         self.router.callback_query.register(self.handle, F.data == 'admin')
+        self.router.callback_query.register(self.send_food_report, F.data == 'admin_food_report')
         self.router.callback_query.register(self.send_report, F.data == 'admin_report')
         self.router.callback_query.register(self.download_report, F.data == 'admin_download_report')
         self.router.callback_query.register(self.did_not_send_report, F.data == 'admin_did_not_send_report')
@@ -54,6 +55,33 @@ class AdminHandler(BaseHandler):
             await event.answer(**kwargs)
         elif isinstance(event, CallbackQuery):
             await event.message.edit_text(**kwargs)
+
+    async def send_food_report(self, callback: CallbackQuery, db: DBConnector) -> None:
+        reports = await db.foods.get_reports_by_day(date.today())
+        reports.sort(key=lambda r: self._form_sort(r.form))
+
+        prompt = (
+            f"# Звіт харчування на {date.today()}\n\n"
+            f"| Клас | Учнів харчується | Всього учнів |\n"
+            f"| --- | --- | --- |\n"
+        )
+
+        for report in reports:
+            prompt += f"| {report.form} | {report.count} | {report.total} |\n"
+
+        total_count = sum(report.count for report in reports)
+        total_total = sum(report.total for report in reports)
+
+        prompt += (
+            f"* <b>Всього харчується:</b> {total_count}\n"
+            f"* <b>Загалом учнів:</b> {total_total}"
+        )
+
+        await callback.message.edit_text(
+            text=prompt,
+            rich_message=InputRichMessage(markdown=prompt),
+            reply_markup=get_back_keyboard('admin'),
+        )
 
     async def send_report(self, callback: CallbackQuery, db: DBConnector) -> None:
         reports = await db.reports.get_reports_by_day(date.today())
@@ -106,19 +134,12 @@ class AdminHandler(BaseHandler):
         )
 
     async def did_not_send_report(self, callback: CallbackQuery, db: DBConnector) -> None:
-        debug_forms = [
-            '10-Г', # липовий клас Василя Анатолійовича
-            '10-Д', # липовий клас Андрій
-            '10-З', # ще один липовий клас Андрія
-        ]
-        # їх ми не включаємо до списку не надіславших звіт
-
         all_forms = await db.forms.get_all_form_names()
         sent_reports = await db.reports.get_reports_by_day(date.today())
         sent_form_names = [report.form for report in sent_reports]
         did_not_send = [
             form for form in all_forms
-            if form not in sent_form_names and form not in debug_forms
+            if form not in sent_form_names
         ]
         did_not_send.sort(key=self._form_sort)
 
