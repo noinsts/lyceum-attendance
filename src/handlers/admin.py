@@ -134,19 +134,12 @@ class AdminHandler(BaseHandler):
         )
 
     async def did_not_send_report(self, callback: CallbackQuery, db: DBConnector) -> None:
-        debug_forms = [
-            '10-Г', # липовий клас Василя Анатолійовича
-            '10-Д', # липовий клас Андрій
-            '10-З', # ще один липовий клас Андрія
-        ]
-        # їх ми не включаємо до списку не надіславших звіт
-
         all_forms = await db.forms.get_all_form_names()
         sent_reports = await db.reports.get_reports_by_day(date.today())
         sent_form_names = [report.form for report in sent_reports]
         did_not_send = [
             form for form in all_forms
-            if form not in sent_form_names and form not in debug_forms
+            if form not in sent_form_names
         ]
         did_not_send.sort(key=self._form_sort)
 
